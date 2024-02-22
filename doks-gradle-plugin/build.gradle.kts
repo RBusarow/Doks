@@ -13,18 +13,19 @@
  * limitations under the License.
  */
 
-import builds.GROUP
-import builds.VERSION_NAME
-import builds.buildM2RootDirectory
-import builds.dependsOn
-import builds.isRealRootProject
+import com.rickbusarow.kgx.isRealRootProject
 
 plugins {
-  id("module")
+  id("com.rickbusarow.mahout.kotlin-jvm-module")
+  // id("com.rickbusarow.mahout.java-gradle-plugin")
+  id("com.rickbusarow.mahout.gradle-test")
   id("java-gradle-plugin")
-  id("com.gradle.plugin-publish")
+  id("dev.drewhamilton.poko")
+
   alias(libs.plugins.buildconfig)
-  alias(libs.plugins.poko)
+  alias(libs.plugins.kotlinx.serialization)
+  alias(libs.plugins.gradle.plugin.publish)
+
   idea
 }
 
@@ -39,86 +40,48 @@ val pluginDeclaration: NamedDomainObjectProvider<PluginDeclaration> =
       id = pluginId
       displayName = "Doks"
       implementationClass = "com.rickbusarow.doks.DoksPlugin"
-      version = VERSION_NAME
+      version = mahoutProperties.versionName.get()
       description = moduleDescription
       this@register.tags.set(listOf("markdown", "documentation"))
     }
 
 val shade by configurations.register("shadowCompileOnly")
 
-module {
-  serialization()
-  shadow(shade)
+mahout {
+  // serialization()
+  // shadow(shade)
 
-  published(
-    artifactId = pluginArtifactId,
-    pomDescription = moduleDescription
-  )
+  // publishPlugin(pluginDeclaration)
 
-  publishedPlugin(pluginDeclaration = pluginDeclaration)
-}
+  publishing {
+    publishMaven(
+      artifactId = pluginArtifactId,
+      pomDescription = moduleDescription
+    )
 
-@Suppress("UnstableApiUsage")
-testing {
-  suites {
-
-    val gradleTest by registering(JvmTestSuite::class) {
-
-      useJUnitJupiter()
-
-      testType.set(TestSuiteType.INTEGRATION_TEST)
-
-      dependencies {
-        implementation(project())
-      }
-
-      targets {
-        configureEach {
-
-          testTask.configure {
-            dependsOn("publishToBuildM2")
-          }
-        }
-      }
-    }
-
-    tasks.named("check").dependsOn(gradleTest)
+    // publishedPlugin(pluginDeclaration = pluginDeclaration)
   }
-}
-
-val gradleTestSourceSet by sourceSets.named("gradleTest", SourceSet::class)
-
-gradlePlugin {
-  @Suppress("UnstableApiUsage")
-  testSourceSet(gradleTestSourceSet)
 }
 
 buildConfig {
 
-  this@buildConfig.sourceSets.named(gradleTestSourceSet.name) {
+  this@buildConfig.sourceSets.named("gradleTest") {
 
-    packageName(GROUP)
+    packageName(mahoutProperties.group.get())
     className("BuildConfig")
 
     useKotlinOutput {
       internalVisibility = true
     }
 
-    val buildM2 = buildM2RootDirectory.map { it.asFile }
+    val buildM2 = rootProject.layout.buildDirectory.dir("m2").map { it.asFile }
     buildConfigField("localBuildM2Dir", buildM2)
 
     buildConfigField("pluginId", pluginId)
-    buildConfigField("version", VERSION_NAME)
-    buildConfigField("doksVersion", VERSION_NAME)
+    buildConfigField("version", mahoutProperties.versionName.get())
+    buildConfigField("doksVersion", mahoutProperties.versionName.get())
     buildConfigField("kotlinVersion", libs.versions.kotlin)
     buildConfigField("gradleVersion", gradle.gradleVersion)
-  }
-}
-
-kotlin {
-  val compilations = target.compilations
-  compilations.named("gradleTest") {
-    associateWith(compilations.getByName("main"))
   }
 }
 
