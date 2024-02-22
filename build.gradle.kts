@@ -13,16 +13,14 @@
  * limitations under the License.
  */
 
-import builds.GROUP
-import builds.VERSION_NAME
-import builds.mustRunAfter
 import com.rickbusarow.doks.DoksTask
+import com.rickbusarow.kgx.mustRunAfter
+import org.jetbrains.kotlin.gradle.dsl.kotlinExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
-  id("root")
+  id("com.rickbusarow.mahout.root")
   alias(libs.plugins.moduleCheck)
   alias(libs.plugins.github.release)
   alias(libs.plugins.doks)
@@ -37,8 +35,10 @@ doks {
   dokSet {
     docs("README.md", "CHANGELOG.md")
 
+    val GROUP = mahoutProperties.group.get()
+
     sampleCodeSource(
-      project(":doks-gradle-plugin").kotlin.sourceSets
+      project(":doks-gradle-plugin").kotlinExtension.sourceSets
         .named("gradleTest")
         .map(KotlinSourceSet::kotlin)
     )
@@ -118,6 +118,8 @@ githubRelease {
 
   owner.set("rbusarow")
 
+  val VERSION_NAME = mahoutProperties.versionName.get()
+
   tagName.set(VERSION_NAME)
   releaseName.set(VERSION_NAME)
 
@@ -157,5 +159,5 @@ githubRelease {
 
   overwrite.set(false)
   dryRun.set(false)
-  draft.set(true)
+  draft.set(false)
 }

@@ -13,13 +13,15 @@
  * limitations under the License.
  */
 
+rootProject.name = "Doks"
+
 pluginManagement {
   repositories {
     gradlePluginPortal()
     mavenCentral()
     google()
   }
-  includeBuild("build-logic")
+  includeBuild("../mahout")
 }
 
 plugins {
@@ -56,13 +58,11 @@ gradleEnterprise {
 dependencyResolutionManagement {
   @Suppress("UnstableApiUsage")
   repositories {
-    google()
     mavenCentral()
-    maven("https://plugins.gradle.org/m2/")
+    gradlePluginPortal()
+    google()
   }
 }
-
-rootProject.name = "Doks"
 
 include(
   ":doks-gradle-plugin"
