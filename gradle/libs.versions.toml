@@ -1,5 +1,5 @@
 [versions]
-benManes-versions = "0.51.0"
+benManes-versions = "0.52.0"
 buildconfig = "5.5.1"
 classgraph = "4.8.179"
 clikt = "5.0.2"
